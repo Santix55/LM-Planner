@@ -1,0 +1,652 @@
+(HAIA_pddl) (base) santix55@SrHumildeLinux:~/Documentos/Master/HAIA/ProyectoFinal$ /home/santix55/anaconda3/envs/HAIA_pddl/bin/python "/home/santix55/Documentos/Master/HAIA/ProyectoFinal/retry-answer copy 2.py"
+The `load_in_4bit` and `load_in_8bit` arguments are deprecated and will be removed in the future versions. Please, pass a `BitsAndBytesConfig` object in `quantization_config` argument instead.
+Loading checkpoint shards: 100%|█████████████████████████████████████████████████████████████████████████| 2/2 [00:03<00:00,  1.85s/it]
+# system prompt tokens = 5643
+# MAX WIN SIZE= 125329
+
+
+== STEP 0 ==
+# window size = 0.0%
+# acciones borradas = 0
+Traceback (most recent call last):
+  File "/home/santix55/Documentos/Master/HAIA/ProyectoFinal/retry-answer copy 2.py", line 207, in <module>
+    main(path_domain=path_domain, path_problem=path_problem, max_steps=max_steps, verbose=verbose, max_errors=max_errors)
+  File "/home/santix55/Documentos/Master/HAIA/ProyectoFinal/retry-answer copy 2.py", line 108, in main
+    vprint(full_prompt)
+           ^^^^^^^^^^^
+UnboundLocalError: cannot access local variable 'full_prompt' where it is not associated with a value
+(HAIA_pddl) (base) santix55@SrHumildeLinux:~/Documentos/Master/HAIA/ProyectoFinal$ /home/santix55/anaconda3/envs/HAIA_pddl/bin/python "/home/santix55/Documentos/Master/HAIA/ProyectoFinal/retry-answer copy 2.py"
+The `load_in_4bit` and `load_in_8bit` arguments are deprecated and will be removed in the future versions. Please, pass a `BitsAndBytesConfig` object in `quantization_config` argument instead.
+Loading checkpoint shards: 100%|█████████████████████████████████████████████████████████████████████████| 2/2 [00:01<00:00,  1.10it/s]
+# system prompt tokens = 5643
+# MAX WIN SIZE= 125329
+
+
+== STEP 0 ==
+# window size = 0.0%
+# acciones borradas = 0
+<|system|>
+You are a PPDL planner. Respond **EXCLUSIVELY** with a valid JSON containing:
+1. "analysis": Here you can reason step by step, all that you want to choose the next action. Check the action history to **AVOID** loops.
+2. "action": **ONLY THE FIRST** PDDL-formatted action
+3. "index": The index of the actions in the users list
+
+Strict rules:
+- Never use markdown/code blocks!
+- Use only standard ASCII characters
+- Include no text outside the JSON
+- Keys must be lowercase and double-quoted
+- Action must match exact PDDL syntax from available actions
+- Never choose an action outside of the list
+problem name = test
+
+types = [pqubit, lqubit, depth]
+
+fluents = [
+  bool occupied_pqubit[p=pqubit]
+  bool initialized[p=pqubit]
+  bool occupied_lqubit[l=lqubit]
+  bool mapped[l=lqubit, p=pqubit]
+  bool connected[p1=pqubit, p2=pqubit]
+  bool rcnot[l1=lqubit, l2=lqubit, d=depth]
+  bool current_depth[d=depth]
+  bool next_depth[d1=depth, d2=depth]
+]
+
+actions = [
+  action map_initial(lqubit l, pqubit p) {
+    preconditions = [
+      ((not occupied_lqubit(l)) and (not initialized(p)))
+    ]
+    effects = [
+      occupied_lqubit(l) := true
+      occupied_pqubit(p) := true
+      initialized(p) := true
+      mapped(l, p) := true
+    ]
+  }
+  action swap(lqubit l1, lqubit l2, pqubit p1, pqubit p2, depth d) {
+    preconditions = [
+      (mapped(l1, p1) and mapped(l2, p2) and current_depth(d) and connected(p1, p2) and (not current_depth(d0)))
+    ]
+    effects = [
+      mapped(l1, p1) := false
+      mapped(l2, p2) := false
+      mapped(l1, p2) := true
+      mapped(l2, p1) := true
+    ]
+  }
+  action swap-ancilary(lqubit l1, pqubit p1, pqubit p2, depth d) {
+    preconditions = [
+      (mapped(l1, p1) and (not occupied_pqubit(p2)) and current_depth(d) and connected(p1, p2) and (not current_depth(d0)))
+    ]
+    effects = [
+      mapped(l1, p1) := false
+      mapped(l1, p2) := true
+      occupied_pqubit(p1) := false
+      occupied_pqubit(p2) := true
+      initialized(p2) := true
+    ]
+  }
+  action apply_cnot(lqubit l1, lqubit l2, pqubit p1, pqubit p2, depth d) {
+    preconditions = [
+      (mapped(l1, p1) and mapped(l2, p2) and connected(p1, p2) and rcnot(l1, l2, d) and current_depth(d))
+    ]
+    effects = [
+      rcnot(l1, l2, d) := false
+    ]
+  }
+  action move_depth(depth d1, depth d2) {
+    preconditions = [
+      (current_depth(d1) and (not current_depth(d2)) and next_depth(d1, d2))
+    ]
+    effects = [
+      current_depth(d1) := false
+      current_depth(d2) := true
+    ]
+  }
+]
+
+objects = [
+  pqubit: [p0, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13]
+  lqubit: [l0, l1, l2]
+  depth: [d0, d2, d4, d5, d6, d7, d8]
+]
+
+initial fluents default = [
+  bool occupied_pqubit[p=pqubit] := false
+  bool initialized[p=pqubit] := false
+  bool occupied_lqubit[l=lqubit] := false
+  bool mapped[l=lqubit, p=pqubit] := false
+  bool connected[p1=pqubit, p2=pqubit] := false
+  bool rcnot[l1=lqubit, l2=lqubit, d=depth] := false
+  bool current_depth[d=depth] := false
+  bool next_depth[d1=depth, d2=depth] := false
+]
+
+initial values = [
+  current_depth(d0) := true
+  connected(p1, p0) := true
+  connected(p1, p2) := true
+  connected(p2, p3) := true
+  connected(p4, p3) := true
+  connected(p4, p10) := true
+  connected(p5, p4) := true
+  connected(p5, p6) := true
+  connected(p5, p9) := true
+  connected(p6, p8) := true
+  connected(p7, p8) := true
+  connected(p9, p8) := true
+  connected(p9, p10) := true
+  connected(p11, p3) := true
+  connected(p11, p10) := true
+  connected(p11, p12) := true
+  connected(p12, p2) := true
+  connected(p13, p1) := true
+  connected(p13, p12) := true
+  connected(p0, p1) := true
+  connected(p2, p1) := true
+  connected(p3, p2) := true
+  connected(p3, p4) := true
+  connected(p10, p4) := true
+  connected(p4, p5) := true
+  connected(p6, p5) := true
+  connected(p9, p5) := true
+  connected(p8, p6) := true
+  connected(p8, p7) := true
+  connected(p8, p9) := true
+  connected(p10, p9) := true
+  connected(p3, p11) := true
+  connected(p10, p11) := true
+  connected(p12, p11) := true
+  connected(p2, p12) := true
+  connected(p1, p13) := true
+  connected(p12, p13) := true
+  next_depth(d0, d2) := true
+  next_depth(d2, d4) := true
+  next_depth(d4, d5) := true
+  next_depth(d5, d6) := true
+  next_depth(d6, d7) := true
+  next_depth(d7, d8) := true
+  rcnot(l2, l1, d2) := true
+  rcnot(l0, l1, d4) := true
+  rcnot(l2, l0, d5) := true
+  rcnot(l2, l1, d6) := true
+  rcnot(l2, l0, d7) := true
+  rcnot(l0, l1, d8) := true
+  occupied_pqubit(p0) := false
+  occupied_pqubit(p1) := false
+  occupied_pqubit(p2) := false
+  occupied_pqubit(p3) := false
+  occupied_pqubit(p4) := false
+  occupied_pqubit(p5) := false
+  occupied_pqubit(p6) := false
+  occupied_pqubit(p7) := false
+  occupied_pqubit(p8) := false
+  occupied_pqubit(p9) := false
+  occupied_pqubit(p10) := false
+  occupied_pqubit(p11) := false
+  occupied_pqubit(p12) := false
+  occupied_pqubit(p13) := false
+  initialized(p0) := false
+  initialized(p1) := false
+  initialized(p2) := false
+  initialized(p3) := false
+  initialized(p4) := false
+  initialized(p5) := false
+  initialized(p6) := false
+  initialized(p7) := false
+  initialized(p8) := false
+  initialized(p9) := false
+  initialized(p10) := false
+  initialized(p11) := false
+  initialized(p12) := false
+  initialized(p13) := false
+  occupied_lqubit(l0) := false
+  occupied_lqubit(l1) := false
+  occupied_lqubit(l2) := false
+  mapped(l0, p0) := false
+  mapped(l1, p0) := false
+  mapped(l2, p0) := false
+  mapped(l0, p1) := false
+  mapped(l1, p1) := false
+  mapped(l2, p1) := false
+  mapped(l0, p2) := false
+  mapped(l1, p2) := false
+  mapped(l2, p2) := false
+  mapped(l0, p3) := false
+  mapped(l1, p3) := false
+  mapped(l2, p3) := false
+  mapped(l0, p4) := false
+  mapped(l1, p4) := false
+  mapped(l2, p4) := false
+  mapped(l0, p5) := false
+  mapped(l1, p5) := false
+  mapped(l2, p5) := false
+  mapped(l0, p6) := false
+  mapped(l1, p6) := false
+  mapped(l2, p6) := false
+  mapped(l0, p7) := false
+  mapped(l1, p7) := false
+  mapped(l2, p7) := false
+  mapped(l0, p8) := false
+  mapped(l1, p8) := false
+  mapped(l2, p8) := false
+  mapped(l0, p9) := false
+  mapped(l1, p9) := false
+  mapped(l2, p9) := false
+  mapped(l0, p10) := false
+  mapped(l1, p10) := false
+  mapped(l2, p10) := false
+  mapped(l0, p11) := false
+  mapped(l1, p11) := false
+  mapped(l2, p11) := false
+  mapped(l0, p12) := false
+  mapped(l1, p12) := false
+  mapped(l2, p12) := false
+  mapped(l0, p13) := false
+  mapped(l1, p13) := false
+  mapped(l2, p13) := false
+  connected(p0, p0) := false
+  connected(p2, p0) := false
+  connected(p3, p0) := false
+  connected(p4, p0) := false
+  connected(p5, p0) := false
+  connected(p6, p0) := false
+  connected(p7, p0) := false
+  connected(p8, p0) := false
+  connected(p9, p0) := false
+  connected(p10, p0) := false
+  connected(p11, p0) := false
+  connected(p12, p0) := false
+  connected(p13, p0) := false
+  connected(p1, p1) := false
+  connected(p3, p1) := false
+  connected(p4, p1) := false
+  connected(p5, p1) := false
+  connected(p6, p1) := false
+  connected(p7, p1) := false
+  connected(p8, p1) := false
+  connected(p9, p1) := false
+  connected(p10, p1) := false
+  connected(p11, p1) := false
+  connected(p12, p1) := false
+  connected(p0, p2) := false
+  connected(p2, p2) := false
+  connected(p4, p2) := false
+  connected(p5, p2) := false
+  connected(p6, p2) := false
+  connected(p7, p2) := false
+  connected(p8, p2) := false
+  connected(p9, p2) := false
+  connected(p10, p2) := false
+  connected(p11, p2) := false
+  connected(p13, p2) := false
+  connected(p0, p3) := false
+  connected(p1, p3) := false
+  connected(p3, p3) := false
+  connected(p5, p3) := false
+  connected(p6, p3) := false
+  connected(p7, p3) := false
+  connected(p8, p3) := false
+  connected(p9, p3) := false
+  connected(p10, p3) := false
+  connected(p12, p3) := false
+  connected(p13, p3) := false
+  connected(p0, p4) := false
+  connected(p1, p4) := false
+  connected(p2, p4) := false
+  connected(p4, p4) := false
+  connected(p6, p4) := false
+  connected(p7, p4) := false
+  connected(p8, p4) := false
+  connected(p9, p4) := false
+  connected(p11, p4) := false
+  connected(p12, p4) := false
+  connected(p13, p4) := false
+  connected(p0, p5) := false
+  connected(p1, p5) := false
+  connected(p2, p5) := false
+  connected(p3, p5) := false
+  connected(p5, p5) := false
+  connected(p7, p5) := false
+  connected(p8, p5) := false
+  connected(p10, p5) := false
+  connected(p11, p5) := false
+  connected(p12, p5) := false
+  connected(p13, p5) := false
+  connected(p0, p6) := false
+  connected(p1, p6) := false
+  connected(p2, p6) := false
+  connected(p3, p6) := false
+  connected(p4, p6) := false
+  connected(p6, p6) := false
+  connected(p7, p6) := false
+  connected(p9, p6) := false
+  connected(p10, p6) := false
+  connected(p11, p6) := false
+  connected(p12, p6) := false
+  connected(p13, p6) := false
+  connected(p0, p7) := false
+  connected(p1, p7) := false
+  connected(p2, p7) := false
+  connected(p3, p7) := false
+  connected(p4, p7) := false
+  connected(p5, p7) := false
+  connected(p6, p7) := false
+  connected(p7, p7) := false
+  connected(p9, p7) := false
+  connected(p10, p7) := false
+  connected(p11, p7) := false
+  connected(p12, p7) := false
+  connected(p13, p7) := false
+  connected(p0, p8) := false
+  connected(p1, p8) := false
+  connected(p2, p8) := false
+  connected(p3, p8) := false
+  connected(p4, p8) := false
+  connected(p5, p8) := false
+  connected(p8, p8) := false
+  connected(p10, p8) := false
+  connected(p11, p8) := false
+  connected(p12, p8) := false
+  connected(p13, p8) := false
+  connected(p0, p9) := false
+  connected(p1, p9) := false
+  connected(p2, p9) := false
+  connected(p3, p9) := false
+  connected(p4, p9) := false
+  connected(p6, p9) := false
+  connected(p7, p9) := false
+  connected(p9, p9) := false
+  connected(p11, p9) := false
+  connected(p12, p9) := false
+  connected(p13, p9) := false
+  connected(p0, p10) := false
+  connected(p1, p10) := false
+  connected(p2, p10) := false
+  connected(p3, p10) := false
+  connected(p5, p10) := false
+  connected(p6, p10) := false
+  connected(p7, p10) := false
+  connected(p8, p10) := false
+  connected(p10, p10) := false
+  connected(p12, p10) := false
+  connected(p13, p10) := false
+  connected(p0, p11) := false
+  connected(p1, p11) := false
+  connected(p2, p11) := false
+  connected(p4, p11) := false
+  connected(p5, p11) := false
+  connected(p6, p11) := false
+  connected(p7, p11) := false
+  connected(p8, p11) := false
+  connected(p9, p11) := false
+  connected(p11, p11) := false
+  connected(p13, p11) := false
+  connected(p0, p12) := false
+  connected(p1, p12) := false
+  connected(p3, p12) := false
+  connected(p4, p12) := false
+  connected(p5, p12) := false
+  connected(p6, p12) := false
+  connected(p7, p12) := false
+  connected(p8, p12) := false
+  connected(p9, p12) := false
+  connected(p10, p12) := false
+  connected(p12, p12) := false
+  connected(p0, p13) := false
+  connected(p2, p13) := false
+  connected(p3, p13) := false
+  connected(p4, p13) := false
+  connected(p5, p13) := false
+  connected(p6, p13) := false
+  connected(p7, p13) := false
+  connected(p8, p13) := false
+  connected(p9, p13) := false
+  connected(p10, p13) := false
+  connected(p11, p13) := false
+  connected(p13, p13) := false
+  rcnot(l0, l0, d0) := false
+  rcnot(l1, l0, d0) := false
+  rcnot(l2, l0, d0) := false
+  rcnot(l0, l1, d0) := false
+  rcnot(l1, l1, d0) := false
+  rcnot(l2, l1, d0) := false
+  rcnot(l0, l2, d0) := false
+  rcnot(l1, l2, d0) := false
+  rcnot(l2, l2, d0) := false
+  rcnot(l0, l0, d2) := false
+  rcnot(l1, l0, d2) := false
+  rcnot(l2, l0, d2) := false
+  rcnot(l0, l1, d2) := false
+  rcnot(l1, l1, d2) := false
+  rcnot(l0, l2, d2) := false
+  rcnot(l1, l2, d2) := false
+  rcnot(l2, l2, d2) := false
+  rcnot(l0, l0, d4) := false
+  rcnot(l1, l0, d4) := false
+  rcnot(l2, l0, d4) := false
+  rcnot(l1, l1, d4) := false
+  rcnot(l2, l1, d4) := false
+  rcnot(l0, l2, d4) := false
+  rcnot(l1, l2, d4) := false
+  rcnot(l2, l2, d4) := false
+  rcnot(l0, l0, d5) := false
+  rcnot(l1, l0, d5) := false
+  rcnot(l0, l1, d5) := false
+  rcnot(l1, l1, d5) := false
+  rcnot(l2, l1, d5) := false
+  rcnot(l0, l2, d5) := false
+  rcnot(l1, l2, d5) := false
+  rcnot(l2, l2, d5) := false
+  rcnot(l0, l0, d6) := false
+  rcnot(l1, l0, d6) := false
+  rcnot(l2, l0, d6) := false
+  rcnot(l0, l1, d6) := false
+  rcnot(l1, l1, d6) := false
+  rcnot(l0, l2, d6) := false
+  rcnot(l1, l2, d6) := false
+  rcnot(l2, l2, d6) := false
+  rcnot(l0, l0, d7) := false
+  rcnot(l1, l0, d7) := false
+  rcnot(l0, l1, d7) := false
+  rcnot(l1, l1, d7) := false
+  rcnot(l2, l1, d7) := false
+  rcnot(l0, l2, d7) := false
+  rcnot(l1, l2, d7) := false
+  rcnot(l2, l2, d7) := false
+  rcnot(l0, l0, d8) := false
+  rcnot(l1, l0, d8) := false
+  rcnot(l2, l0, d8) := false
+  rcnot(l1, l1, d8) := false
+  rcnot(l2, l1, d8) := false
+  rcnot(l0, l2, d8) := false
+  rcnot(l1, l2, d8) := false
+  rcnot(l2, l2, d8) := false
+  current_depth(d2) := false
+  current_depth(d4) := false
+  current_depth(d5) := false
+  current_depth(d6) := false
+  current_depth(d7) := false
+  current_depth(d8) := false
+  next_depth(d0, d0) := false
+  next_depth(d2, d0) := false
+  next_depth(d4, d0) := false
+  next_depth(d5, d0) := false
+  next_depth(d6, d0) := false
+  next_depth(d7, d0) := false
+  next_depth(d8, d0) := false
+  next_depth(d2, d2) := false
+  next_depth(d4, d2) := false
+  next_depth(d5, d2) := false
+  next_depth(d6, d2) := false
+  next_depth(d7, d2) := false
+  next_depth(d8, d2) := false
+  next_depth(d0, d4) := false
+  next_depth(d4, d4) := false
+  next_depth(d5, d4) := false
+  next_depth(d6, d4) := false
+  next_depth(d7, d4) := false
+  next_depth(d8, d4) := false
+  next_depth(d0, d5) := false
+  next_depth(d2, d5) := false
+  next_depth(d5, d5) := false
+  next_depth(d6, d5) := false
+  next_depth(d7, d5) := false
+  next_depth(d8, d5) := false
+  next_depth(d0, d6) := false
+  next_depth(d2, d6) := false
+  next_depth(d4, d6) := false
+  next_depth(d6, d6) := false
+  next_depth(d7, d6) := false
+  next_depth(d8, d6) := false
+  next_depth(d0, d7) := false
+  next_depth(d2, d7) := false
+  next_depth(d4, d7) := false
+  next_depth(d5, d7) := false
+  next_depth(d7, d7) := false
+  next_depth(d8, d7) := false
+  next_depth(d0, d8) := false
+  next_depth(d2, d8) := false
+  next_depth(d4, d8) := false
+  next_depth(d5, d8) := false
+  next_depth(d6, d8) := false
+  next_depth(d8, d8) := false
+]
+
+goals = [
+  (occupied_lqubit(l0) and occupied_lqubit(l1) and occupied_lqubit(l2) and (not rcnot(l2, l1, d2)) and (not rcnot(l0, l1, d4)) and (not rcnot(l2, l0, d5)) and (not rcnot(l2, l1, d6)) and (not rcnot(l2, l0, d7)) and (not rcnot(l0, l1, d8)))
+]
+
+
+<|end|>
+
+<|user|>
+This is the current state of the enviorment:
+ {current_depth(d0): true, connected(p1, p0): true, connected(p1, p2): true, connected(p2, p3): true, connected(p4, p3): true, connected(p4, p10): true, connected(p5, p4): true, connected(p5, p6): true, connected(p5, p9): true, connected(p6, p8): true, connected(p7, p8): true, connected(p9, p8): true, connected(p9, p10): true, connected(p11, p3): true, connected(p11, p10): true, connected(p11, p12): true, connected(p12, p2): true, connected(p13, p1): true, connected(p13, p12): true, connected(p0, p1): true, connected(p2, p1): true, connected(p3, p2): true, connected(p3, p4): true, connected(p10, p4): true, connected(p4, p5): true, connected(p6, p5): true, connected(p9, p5): true, connected(p8, p6): true, connected(p8, p7): true, connected(p8, p9): true, connected(p10, p9): true, connected(p3, p11): true, connected(p10, p11): true, connected(p12, p11): true, connected(p2, p12): true, connected(p1, p13): true, connected(p12, p13): true, next_depth(d0, d2): true, next_depth(d2, d4): true, next_depth(d4, d5): true, next_depth(d5, d6): true, next_depth(d6, d7): true, next_depth(d7, d8): true, rcnot(l2, l1, d2): true, rcnot(l0, l1, d4): true, rcnot(l2, l0, d5): true, rcnot(l2, l1, d6): true, rcnot(l2, l0, d7): true, rcnot(l0, l1, d8): true, occupied_pqubit(p0): false, occupied_pqubit(p1): false, occupied_pqubit(p2): false, occupied_pqubit(p3): false, occupied_pqubit(p4): false, occupied_pqubit(p5): false, occupied_pqubit(p6): false, occupied_pqubit(p7): false, occupied_pqubit(p8): false, occupied_pqubit(p9): false, occupied_pqubit(p10): false, occupied_pqubit(p11): false, occupied_pqubit(p12): false, occupied_pqubit(p13): false, initialized(p0): false, initialized(p1): false, initialized(p2): false, initialized(p3): false, initialized(p4): false, initialized(p5): false, initialized(p6): false, initialized(p7): false, initialized(p8): false, initialized(p9): false, initialized(p10): false, initialized(p11): false, initialized(p12): false, initialized(p13): false, occupied_lqubit(l0): false, occupied_lqubit(l1): false, occupied_lqubit(l2): false, mapped(l0, p0): false, mapped(l1, p0): false, mapped(l2, p0): false, mapped(l0, p1): false, mapped(l1, p1): false, mapped(l2, p1): false, mapped(l0, p2): false, mapped(l1, p2): false, mapped(l2, p2): false, mapped(l0, p3): false, mapped(l1, p3): false, mapped(l2, p3): false, mapped(l0, p4): false, mapped(l1, p4): false, mapped(l2, p4): false, mapped(l0, p5): false, mapped(l1, p5): false, mapped(l2, p5): false, mapped(l0, p6): false, mapped(l1, p6): false, mapped(l2, p6): false, mapped(l0, p7): false, mapped(l1, p7): false, mapped(l2, p7): false, mapped(l0, p8): false, mapped(l1, p8): false, mapped(l2, p8): false, mapped(l0, p9): false, mapped(l1, p9): false, mapped(l2, p9): false, mapped(l0, p10): false, mapped(l1, p10): false, mapped(l2, p10): false, mapped(l0, p11): false, mapped(l1, p11): false, mapped(l2, p11): false, mapped(l0, p12): false, mapped(l1, p12): false, mapped(l2, p12): false, mapped(l0, p13): false, mapped(l1, p13): false, mapped(l2, p13): false, connected(p0, p0): false, connected(p2, p0): false, connected(p3, p0): false, connected(p4, p0): false, connected(p5, p0): false, connected(p6, p0): false, connected(p7, p0): false, connected(p8, p0): false, connected(p9, p0): false, connected(p10, p0): false, connected(p11, p0): false, connected(p12, p0): false, connected(p13, p0): false, connected(p1, p1): false, connected(p3, p1): false, connected(p4, p1): false, connected(p5, p1): false, connected(p6, p1): false, connected(p7, p1): false, connected(p8, p1): false, connected(p9, p1): false, connected(p10, p1): false, connected(p11, p1): false, connected(p12, p1): false, connected(p0, p2): false, connected(p2, p2): false, connected(p4, p2): false, connected(p5, p2): false, connected(p6, p2): false, connected(p7, p2): false, connected(p8, p2): false, connected(p9, p2): false, connected(p10, p2): false, connected(p11, p2): false, connected(p13, p2): false, connected(p0, p3): false, connected(p1, p3): false, connected(p3, p3): false, connected(p5, p3): false, connected(p6, p3): false, connected(p7, p3): false, connected(p8, p3): false, connected(p9, p3): false, connected(p10, p3): false, connected(p12, p3): false, connected(p13, p3): false, connected(p0, p4): false, connected(p1, p4): false, connected(p2, p4): false, connected(p4, p4): false, connected(p6, p4): false, connected(p7, p4): false, connected(p8, p4): false, connected(p9, p4): false, connected(p11, p4): false, connected(p12, p4): false, connected(p13, p4): false, connected(p0, p5): false, connected(p1, p5): false, connected(p2, p5): false, connected(p3, p5): false, connected(p5, p5): false, connected(p7, p5): false, connected(p8, p5): false, connected(p10, p5): false, connected(p11, p5): false, connected(p12, p5): false, connected(p13, p5): false, connected(p0, p6): false, connected(p1, p6): false, connected(p2, p6): false, connected(p3, p6): false, connected(p4, p6): false, connected(p6, p6): false, connected(p7, p6): false, connected(p9, p6): false, connected(p10, p6): false, connected(p11, p6): false, connected(p12, p6): false, connected(p13, p6): false, connected(p0, p7): false, connected(p1, p7): false, connected(p2, p7): false, connected(p3, p7): false, connected(p4, p7): false, connected(p5, p7): false, connected(p6, p7): false, connected(p7, p7): false, connected(p9, p7): false, connected(p10, p7): false, connected(p11, p7): false, connected(p12, p7): false, connected(p13, p7): false, connected(p0, p8): false, connected(p1, p8): false, connected(p2, p8): false, connected(p3, p8): false, connected(p4, p8): false, connected(p5, p8): false, connected(p8, p8): false, connected(p10, p8): false, connected(p11, p8): false, connected(p12, p8): false, connected(p13, p8): false, connected(p0, p9): false, connected(p1, p9): false, connected(p2, p9): false, connected(p3, p9): false, connected(p4, p9): false, connected(p6, p9): false, connected(p7, p9): false, connected(p9, p9): false, connected(p11, p9): false, connected(p12, p9): false, connected(p13, p9): false, connected(p0, p10): false, connected(p1, p10): false, connected(p2, p10): false, connected(p3, p10): false, connected(p5, p10): false, connected(p6, p10): false, connected(p7, p10): false, connected(p8, p10): false, connected(p10, p10): false, connected(p12, p10): false, connected(p13, p10): false, connected(p0, p11): false, connected(p1, p11): false, connected(p2, p11): false, connected(p4, p11): false, connected(p5, p11): false, connected(p6, p11): false, connected(p7, p11): false, connected(p8, p11): false, connected(p9, p11): false, connected(p11, p11): false, connected(p13, p11): false, connected(p0, p12): false, connected(p1, p12): false, connected(p3, p12): false, connected(p4, p12): false, connected(p5, p12): false, connected(p6, p12): false, connected(p7, p12): false, connected(p8, p12): false, connected(p9, p12): false, connected(p10, p12): false, connected(p12, p12): false, connected(p0, p13): false, connected(p2, p13): false, connected(p3, p13): false, connected(p4, p13): false, connected(p5, p13): false, connected(p6, p13): false, connected(p7, p13): false, connected(p8, p13): false, connected(p9, p13): false, connected(p10, p13): false, connected(p11, p13): false, connected(p13, p13): false, rcnot(l0, l0, d0): false, rcnot(l1, l0, d0): false, rcnot(l2, l0, d0): false, rcnot(l0, l1, d0): false, rcnot(l1, l1, d0): false, rcnot(l2, l1, d0): false, rcnot(l0, l2, d0): false, rcnot(l1, l2, d0): false, rcnot(l2, l2, d0): false, rcnot(l0, l0, d2): false, rcnot(l1, l0, d2): false, rcnot(l2, l0, d2): false, rcnot(l0, l1, d2): false, rcnot(l1, l1, d2): false, rcnot(l0, l2, d2): false, rcnot(l1, l2, d2): false, rcnot(l2, l2, d2): false, rcnot(l0, l0, d4): false, rcnot(l1, l0, d4): false, rcnot(l2, l0, d4): false, rcnot(l1, l1, d4): false, rcnot(l2, l1, d4): false, rcnot(l0, l2, d4): false, rcnot(l1, l2, d4): false, rcnot(l2, l2, d4): false, rcnot(l0, l0, d5): false, rcnot(l1, l0, d5): false, rcnot(l0, l1, d5): false, rcnot(l1, l1, d5): false, rcnot(l2, l1, d5): false, rcnot(l0, l2, d5): false, rcnot(l1, l2, d5): false, rcnot(l2, l2, d5): false, rcnot(l0, l0, d6): false, rcnot(l1, l0, d6): false, rcnot(l2, l0, d6): false, rcnot(l0, l1, d6): false, rcnot(l1, l1, d6): false, rcnot(l0, l2, d6): false, rcnot(l1, l2, d6): false, rcnot(l2, l2, d6): false, rcnot(l0, l0, d7): false, rcnot(l1, l0, d7): false, rcnot(l0, l1, d7): false, rcnot(l1, l1, d7): false, rcnot(l2, l1, d7): false, rcnot(l0, l2, d7): false, rcnot(l1, l2, d7): false, rcnot(l2, l2, d7): false, rcnot(l0, l0, d8): false, rcnot(l1, l0, d8): false, rcnot(l2, l0, d8): false, rcnot(l1, l1, d8): false, rcnot(l2, l1, d8): false, rcnot(l0, l2, d8): false, rcnot(l1, l2, d8): false, rcnot(l2, l2, d8): false, current_depth(d2): false, current_depth(d4): false, current_depth(d5): false, current_depth(d6): false, current_depth(d7): false, current_depth(d8): false, next_depth(d0, d0): false, next_depth(d2, d0): false, next_depth(d4, d0): false, next_depth(d5, d0): false, next_depth(d6, d0): false, next_depth(d7, d0): false, next_depth(d8, d0): false, next_depth(d2, d2): false, next_depth(d4, d2): false, next_depth(d5, d2): false, next_depth(d6, d2): false, next_depth(d7, d2): false, next_depth(d8, d2): false, next_depth(d0, d4): false, next_depth(d4, d4): false, next_depth(d5, d4): false, next_depth(d6, d4): false, next_depth(d7, d4): false, next_depth(d8, d4): false, next_depth(d0, d5): false, next_depth(d2, d5): false, next_depth(d5, d5): false, next_depth(d6, d5): false, next_depth(d7, d5): false, next_depth(d8, d5): false, next_depth(d0, d6): false, next_depth(d2, d6): false, next_depth(d4, d6): false, next_depth(d6, d6): false, next_depth(d7, d6): false, next_depth(d8, d6): false, next_depth(d0, d7): false, next_depth(d2, d7): false, next_depth(d4, d7): false, next_depth(d5, d7): false, next_depth(d7, d7): false, next_depth(d8, d7): false, next_depth(d0, d8): false, next_depth(d2, d8): false, next_depth(d4, d8): false, next_depth(d5, d8): false, next_depth(d6, d8): false, next_depth(d8, d8): false} 
+current_depth(d0)connected(p1, p0)connected(p1, p2)connected(p2, p3)connected(p4, p3)connected(p4, p10)connected(p5, p4)connected(p5, p6)connected(p5, p9)connected(p6, p8)connected(p7, p8)connected(p9, p8)connected(p9, p10)connected(p11, p3)connected(p11, p10)connected(p11, p12)connected(p12, p2)connected(p13, p1)connected(p13, p12)connected(p0, p1)connected(p2, p1)connected(p3, p2)connected(p3, p4)connected(p10, p4)connected(p4, p5)connected(p6, p5)connected(p9, p5)connected(p8, p6)connected(p8, p7)connected(p8, p9)connected(p10, p9)connected(p3, p11)connected(p10, p11)connected(p12, p11)connected(p2, p12)connected(p1, p13)connected(p12, p13)next_depth(d0, d2)next_depth(d2, d4)next_depth(d4, d5)next_depth(d5, d6)next_depth(d6, d7)next_depth(d7, d8)rcnot(l2, l1, d2)rcnot(l0, l1, d4)rcnot(l2, l0, d5)rcnot(l2, l1, d6)rcnot(l2, l0, d7)rcnot(l0, l1, d8)occupied_pqubit(p0)occupied_pqubit(p1)occupied_pqubit(p2)occupied_pqubit(p3)occupied_pqubit(p4)occupied_pqubit(p5)occupied_pqubit(p6)occupied_pqubit(p7)occupied_pqubit(p8)occupied_pqubit(p9)occupied_pqubit(p10)occupied_pqubit(p11)occupied_pqubit(p12)occupied_pqubit(p13)initialized(p0)initialized(p1)initialized(p2)initialized(p3)initialized(p4)initialized(p5)initialized(p6)initialized(p7)initialized(p8)initialized(p9)initialized(p10)initialized(p11)initialized(p12)initialized(p13)occupied_lqubit(l0)occupied_lqubit(l1)occupied_lqubit(l2)mapped(l0, p0)mapped(l1, p0)mapped(l2, p0)mapped(l0, p1)mapped(l1, p1)mapped(l2, p1)mapped(l0, p2)mapped(l1, p2)mapped(l2, p2)mapped(l0, p3)mapped(l1, p3)mapped(l2, p3)mapped(l0, p4)mapped(l1, p4)mapped(l2, p4)mapped(l0, p5)mapped(l1, p5)mapped(l2, p5)mapped(l0, p6)mapped(l1, p6)mapped(l2, p6)mapped(l0, p7)mapped(l1, p7)mapped(l2, p7)mapped(l0, p8)mapped(l1, p8)mapped(l2, p8)mapped(l0, p9)mapped(l1, p9)mapped(l2, p9)mapped(l0, p10)mapped(l1, p10)mapped(l2, p10)mapped(l0, p11)mapped(l1, p11)mapped(l2, p11)mapped(l0, p12)mapped(l1, p12)mapped(l2, p12)mapped(l0, p13)mapped(l1, p13)mapped(l2, p13)connected(p0, p0)connected(p2, p0)connected(p3, p0)connected(p4, p0)connected(p5, p0)connected(p6, p0)connected(p7, p0)connected(p8, p0)connected(p9, p0)connected(p10, p0)connected(p11, p0)connected(p12, p0)connected(p13, p0)connected(p1, p1)connected(p3, p1)connected(p4, p1)connected(p5, p1)connected(p6, p1)connected(p7, p1)connected(p8, p1)connected(p9, p1)connected(p10, p1)connected(p11, p1)connected(p12, p1)connected(p0, p2)connected(p2, p2)connected(p4, p2)connected(p5, p2)connected(p6, p2)connected(p7, p2)connected(p8, p2)connected(p9, p2)connected(p10, p2)connected(p11, p2)connected(p13, p2)connected(p0, p3)connected(p1, p3)connected(p3, p3)connected(p5, p3)connected(p6, p3)connected(p7, p3)connected(p8, p3)connected(p9, p3)connected(p10, p3)connected(p12, p3)connected(p13, p3)connected(p0, p4)connected(p1, p4)connected(p2, p4)connected(p4, p4)connected(p6, p4)connected(p7, p4)connected(p8, p4)connected(p9, p4)connected(p11, p4)connected(p12, p4)connected(p13, p4)connected(p0, p5)connected(p1, p5)connected(p2, p5)connected(p3, p5)connected(p5, p5)connected(p7, p5)connected(p8, p5)connected(p10, p5)connected(p11, p5)connected(p12, p5)connected(p13, p5)connected(p0, p6)connected(p1, p6)connected(p2, p6)connected(p3, p6)connected(p4, p6)connected(p6, p6)connected(p7, p6)connected(p9, p6)connected(p10, p6)connected(p11, p6)connected(p12, p6)connected(p13, p6)connected(p0, p7)connected(p1, p7)connected(p2, p7)connected(p3, p7)connected(p4, p7)connected(p5, p7)connected(p6, p7)connected(p7, p7)connected(p9, p7)connected(p10, p7)connected(p11, p7)connected(p12, p7)connected(p13, p7)connected(p0, p8)connected(p1, p8)connected(p2, p8)connected(p3, p8)connected(p4, p8)connected(p5, p8)connected(p8, p8)connected(p10, p8)connected(p11, p8)connected(p12, p8)connected(p13, p8)connected(p0, p9)connected(p1, p9)connected(p2, p9)connected(p3, p9)connected(p4, p9)connected(p6, p9)connected(p7, p9)connected(p9, p9)connected(p11, p9)connected(p12, p9)connected(p13, p9)connected(p0, p10)connected(p1, p10)connected(p2, p10)connected(p3, p10)connected(p5, p10)connected(p6, p10)connected(p7, p10)connected(p8, p10)connected(p10, p10)connected(p12, p10)connected(p13, p10)connected(p0, p11)connected(p1, p11)connected(p2, p11)connected(p4, p11)connected(p5, p11)connected(p6, p11)connected(p7, p11)connected(p8, p11)connected(p9, p11)connected(p11, p11)connected(p13, p11)connected(p0, p12)connected(p1, p12)connected(p3, p12)connected(p4, p12)connected(p5, p12)connected(p6, p12)connected(p7, p12)connected(p8, p12)connected(p9, p12)connected(p10, p12)connected(p12, p12)connected(p0, p13)connected(p2, p13)connected(p3, p13)connected(p4, p13)connected(p5, p13)connected(p6, p13)connected(p7, p13)connected(p8, p13)connected(p9, p13)connected(p10, p13)connected(p11, p13)connected(p13, p13)rcnot(l0, l0, d0)rcnot(l1, l0, d0)rcnot(l2, l0, d0)rcnot(l0, l1, d0)rcnot(l1, l1, d0)rcnot(l2, l1, d0)rcnot(l0, l2, d0)rcnot(l1, l2, d0)rcnot(l2, l2, d0)rcnot(l0, l0, d2)rcnot(l1, l0, d2)rcnot(l2, l0, d2)rcnot(l0, l1, d2)rcnot(l1, l1, d2)rcnot(l0, l2, d2)rcnot(l1, l2, d2)rcnot(l2, l2, d2)rcnot(l0, l0, d4)rcnot(l1, l0, d4)rcnot(l2, l0, d4)rcnot(l1, l1, d4)rcnot(l2, l1, d4)rcnot(l0, l2, d4)rcnot(l1, l2, d4)rcnot(l2, l2, d4)rcnot(l0, l0, d5)rcnot(l1, l0, d5)rcnot(l0, l1, d5)rcnot(l1, l1, d5)rcnot(l2, l1, d5)rcnot(l0, l2, d5)rcnot(l1, l2, d5)rcnot(l2, l2, d5)rcnot(l0, l0, d6)rcnot(l1, l0, d6)rcnot(l2, l0, d6)rcnot(l0, l1, d6)rcnot(l1, l1, d6)rcnot(l0, l2, d6)rcnot(l1, l2, d6)rcnot(l2, l2, d6)rcnot(l0, l0, d7)rcnot(l1, l0, d7)rcnot(l0, l1, d7)rcnot(l1, l1, d7)rcnot(l2, l1, d7)rcnot(l0, l2, d7)rcnot(l1, l2, d7)rcnot(l2, l2, d7)rcnot(l0, l0, d8)rcnot(l1, l0, d8)rcnot(l2, l0, d8)rcnot(l1, l1, d8)rcnot(l2, l1, d8)rcnot(l0, l2, d8)rcnot(l1, l2, d8)rcnot(l2, l2, d8)current_depth(d2)current_depth(d4)current_depth(d5)current_depth(d6)current_depth(d7)current_depth(d8)next_depth(d0, d0)next_depth(d2, d0)next_depth(d4, d0)next_depth(d5, d0)next_depth(d6, d0)next_depth(d7, d0)next_depth(d8, d0)next_depth(d2, d2)next_depth(d4, d2)next_depth(d5, d2)next_depth(d6, d2)next_depth(d7, d2)next_depth(d8, d2)next_depth(d0, d4)next_depth(d4, d4)next_depth(d5, d4)next_depth(d6, d4)next_depth(d7, d4)next_depth(d8, d4)next_depth(d0, d5)next_depth(d2, d5)next_depth(d5, d5)next_depth(d6, d5)next_depth(d7, d5)next_depth(d8, d5)next_depth(d0, d6)next_depth(d2, d6)next_depth(d4, d6)next_depth(d6, d6)next_depth(d7, d6)next_depth(d8, d6)next_depth(d0, d7)next_depth(d2, d7)next_depth(d4, d7)next_depth(d5, d7)next_depth(d7, d7)next_depth(d8, d7)next_depth(d0, d8)next_depth(d2, d8)next_depth(d4, d8)next_depth(d5, d8)next_depth(d6, d8)next_depth(d8, d8)
+
+This is the list of your previous actions: 
+
+The list of posible actions for this state is: 
+0.-map_initial(l0, p0)
+1.-map_initial(l0, p1)
+2.-map_initial(l0, p2)
+3.-map_initial(l0, p3)
+4.-map_initial(l0, p4)
+5.-map_initial(l0, p5)
+6.-map_initial(l0, p6)
+7.-map_initial(l0, p7)
+8.-map_initial(l0, p8)
+9.-map_initial(l0, p9)
+10.-map_initial(l0, p10)
+11.-map_initial(l0, p11)
+12.-map_initial(l0, p12)
+13.-map_initial(l0, p13)
+14.-map_initial(l1, p0)
+15.-map_initial(l1, p1)
+16.-map_initial(l1, p2)
+17.-map_initial(l1, p3)
+18.-map_initial(l1, p4)
+19.-map_initial(l1, p5)
+20.-map_initial(l1, p6)
+21.-map_initial(l1, p7)
+22.-map_initial(l1, p8)
+23.-map_initial(l1, p9)
+24.-map_initial(l1, p10)
+25.-map_initial(l1, p11)
+26.-map_initial(l1, p12)
+27.-map_initial(l1, p13)
+28.-map_initial(l2, p0)
+29.-map_initial(l2, p1)
+30.-map_initial(l2, p2)
+31.-map_initial(l2, p3)
+32.-map_initial(l2, p4)
+33.-map_initial(l2, p5)
+34.-map_initial(l2, p6)
+35.-map_initial(l2, p7)
+36.-map_initial(l2, p8)
+37.-map_initial(l2, p9)
+38.-map_initial(l2, p10)
+39.-map_initial(l2, p11)
+40.-map_initial(l2, p12)
+41.-map_initial(l2, p13)
+42.-move_depth(d0, d2)
+
+<|end|>
+<|assistant|>
+
+Traceback (most recent call last):
+  File "/home/santix55/Documentos/Master/HAIA/ProyectoFinal/retry-answer copy 2.py", line 206, in <module>
+    main(path_domain=path_domain, path_problem=path_problem, max_steps=max_steps, verbose=verbose, max_errors=max_errors)
+  File "/home/santix55/Documentos/Master/HAIA/ProyectoFinal/retry-answer copy 2.py", line 118, in main
+    outputs = model.generate(
+              ^^^^^^^^^^^^^^^
+  File "/home/santix55/anaconda3/envs/HAIA_pddl/lib/python3.12/site-packages/torch/utils/_contextlib.py", line 116, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/santix55/anaconda3/envs/HAIA_pddl/lib/python3.12/site-packages/transformers/generation/utils.py", line 2223, in generate
+    result = self._sample(
+             ^^^^^^^^^^^^^
+  File "/home/santix55/anaconda3/envs/HAIA_pddl/lib/python3.12/site-packages/transformers/generation/utils.py", line 3211, in _sample
+    outputs = self(**model_inputs, return_dict=True)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/santix55/anaconda3/envs/HAIA_pddl/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1739, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/santix55/anaconda3/envs/HAIA_pddl/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1750, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/santix55/anaconda3/envs/HAIA_pddl/lib/python3.12/site-packages/transformers/utils/deprecation.py", line 172, in wrapped_func
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/santix55/anaconda3/envs/HAIA_pddl/lib/python3.12/site-packages/transformers/models/phi3/modeling_phi3.py", line 918, in forward
+    outputs = self.model(
+              ^^^^^^^^^^^
+  File "/home/santix55/anaconda3/envs/HAIA_pddl/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1739, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/santix55/anaconda3/envs/HAIA_pddl/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1750, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/santix55/anaconda3/envs/HAIA_pddl/lib/python3.12/site-packages/transformers/models/phi3/modeling_phi3.py", line 641, in forward
+    layer_outputs = decoder_layer(
+                    ^^^^^^^^^^^^^^
+  File "/home/santix55/anaconda3/envs/HAIA_pddl/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1739, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/santix55/anaconda3/envs/HAIA_pddl/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1750, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/santix55/anaconda3/envs/HAIA_pddl/lib/python3.12/site-packages/transformers/models/phi3/modeling_phi3.py", line 316, in forward
+    hidden_states = self.mlp(hidden_states)
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/santix55/anaconda3/envs/HAIA_pddl/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1739, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/santix55/anaconda3/envs/HAIA_pddl/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1750, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/santix55/anaconda3/envs/HAIA_pddl/lib/python3.12/site-packages/transformers/models/phi3/modeling_phi3.py", line 70, in forward
+    up_states = self.gate_up_proj(hidden_states)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/santix55/anaconda3/envs/HAIA_pddl/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1739, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/santix55/anaconda3/envs/HAIA_pddl/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1750, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/santix55/anaconda3/envs/HAIA_pddl/lib/python3.12/site-packages/bitsandbytes/nn/modules.py", line 990, in forward
+    out = bnb.matmul(x, self.weight, bias=self.bias, state=self.state)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/santix55/anaconda3/envs/HAIA_pddl/lib/python3.12/site-packages/bitsandbytes/autograd/_functions.py", line 509, in matmul
+    return MatMul8bitLt.apply(A, B, out, bias, state)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/santix55/anaconda3/envs/HAIA_pddl/lib/python3.12/site-packages/torch/autograd/function.py", line 575, in apply
+    return super().apply(*args, **kwargs)  # type: ignore[misc]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/santix55/anaconda3/envs/HAIA_pddl/lib/python3.12/site-packages/bitsandbytes/autograd/_functions.py", line 380, in forward
+    output = output.addmm(subA, state.subB)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 402.00 MiB. GPU 0 has a total capacity of 7.75 GiB of which 169.19 MiB is free. Including non-PyTorch memory, this process has 7.53 GiB memory in use. Of the allocated memory 6.55 GiB is allocated by PyTorch, and 880.89 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
